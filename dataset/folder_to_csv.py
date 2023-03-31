@@ -7,9 +7,9 @@ from sklearn.model_selection import train_test_split
 
 class CreateFile():
     
-    def __init__(self, folders, split_list, path_to_save, csv_names):
+    def __init__(self, folders_dict, split_list, path_to_save, csv_names):
         
-        self.folders = folders # Dictionary with folder_path:folder_label
+        self.folders_dict = folders_dict # Dictionary with folder_path:folder_label
         self.path_to_save = path_to_save # list with the full-paths to save the csv
         self.split_list = split_list # list with the sizes to split the dataframes. 0 -> test_size, 1 -> train_size
         self.csv_names = csv_names # list with the names of the csv files to save
@@ -22,8 +22,8 @@ class CreateFile():
             data_frames = [] # list that consists of all the dataframes
 
             # first turn images to pd.Dataframe:
-            for folder_path, folder_label in self.folders.items():
-                df = self._images_to_df(path=folder_path, label_number=folder_label)
+            for folder_path, folder_label in self.folders_dict.items():
+                df = self.write_image_paths_to_csv(folder_path=folder_path, folder_label=folder_label)
                 data_frames.append(df)
 
             final_df = self._concat_df(data_frames) # then concatenate the dataframes in to a single one
@@ -60,3 +60,13 @@ class CreateFile():
         train_df, test_df = train_test_split(df, test_size=test_size)
         train_df, val_df = train_test_split(train_df, train_size=train_size)
         return train_df, val_df, test_df
+    
+
+    def write_image_paths_to_csv(self, folder_path, folder_label):
+        data = {'image_path': [], 'label': []}
+        for file_name in os.listdir(folder_path):
+            if file_name.endswith('.jpg') or file_name.endswith('.png') or file_name.endswith('.jpeg'):
+                data['image_path'].append(os.path.join(folder_path, file_name))
+                data['label'].append(folder_label)
+        df = pd.DataFrame(data)
+        return df
